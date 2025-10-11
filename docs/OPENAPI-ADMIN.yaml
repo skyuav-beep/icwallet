@@ -1,0 +1,149 @@
+openapi: 3.1.0
+info:
+  title: IC Wallet Admin API
+  description: >-
+    Administrative endpoints for authentication and approvals.
+    관리자 인증 및 승인 엔드포인트 문서입니다.
+  version: '0.1.0'
+  contact:
+    name: IC Wallet Platform Team / IC 월렛 플랫폼 팀
+    email: platform@icwallet.example
+servers:
+  - url: https://api.icwallet.example.com/api/v1
+    description: Production / 프로덕션
+  - url: http://localhost:3000/api/v1
+    description: Local development / 로컬 개발
+tags:
+  - name: Auth
+    description: Admin authentication endpoints / 관리자 인증 엔드포인트
+  - name: Mining
+    description: Withdrawal approvals and mining queue / 출금 승인과 마이닝 큐
+  - name: P2P
+    description: P2P escrow dispute handling / P2P 에스크로 분쟁 처리
+paths:
+  /admin/auth/login:
+    post:
+      operationId: adminAuthLogin
+      summary: Admin login / 관리자 로그인
+      description: >-
+        Issues a JWT for an administrator. Provide email and password; response
+        includes `accessToken` and `expiresIn` fields.
+        관리자 이메일/비밀번호로 JWT를 발급합니다. 응답에는 `accessToken`, `expiresIn`
+        값이 포함됩니다.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: superadmin@icwallet.example
+                  description: Admin email / 관리자 이메일
+                password:
+                  type: string
+                  format: password
+                  example: ChangeMe123!
+                  description: Admin password / 관리자 비밀번호
+      responses:
+        '201':
+          description: JWT issued / JWT 발급 완료
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: object
+                    properties:
+                      accessToken:
+                        type: string
+                        description: Bearer token for subsequent requests / 이후 요청에 사용할 Bearer 토큰
+                      expiresIn:
+                        type: integer
+                        example: 1800
+                        description: Expiration (seconds) / 만료 시간(초)
+        '401':
+          description: Invalid credentials / 인증 실패
+  /admin/mining/withdrawals/{withdrawalId}/approve:
+    post:
+      operationId: approveWithdrawalRequest
+      summary: Approve withdrawal / 출금 승인
+      description: >-
+        Approves a pending withdrawal request. Requires Bearer token with
+        finance privileges. 승인 가능한 출금 요청을 관리자가 승인합니다. 재무 권한이 있는
+        Bearer 토큰이 필요합니다.
+      tags: [Mining]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: withdrawalId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Withdrawal request ID / 출금 요청 ID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+                  maxLength: 500
+                  description: Approval note (optional) / 승인 메모(선택)
+      responses:
+        '200':
+          description: Withdrawal approved / 출금 승인 완료
+        '400':
+          description: Invalid status / 승인 불가 상태
+        '404':
+          description: Withdrawal not found / 출금 요청 없음
+  /admin/p2p/escrows/{escrowId}/refund:
+    post:
+      operationId: refundEscrow
+      summary: Refund escrow / 에스크로 환불
+      description: >-
+        Refunds an escrow transaction back to the buyer. Requires admin token
+        with dispute privileges. 에스크로 거래를 구매자에게 환불합니다. 분쟁 처리 권한이 있는
+        관리자 토큰이 필요합니다.
+      tags: [P2P]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: escrowId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Escrow identifier / 에스크로 ID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+                  maxLength: 500
+                  description: Refund note / 환불 메모
+      responses:
+        '200':
+          description: Escrow refunded / 에스크로 환불 완료
+        '400':
+          description: Invalid escrow state / 환불 불가 상태
+        '404':
+          description: Escrow not found / 에스크로 없음
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

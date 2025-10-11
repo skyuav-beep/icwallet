@@ -1,0 +1,37 @@
+# EN: Dependencies and package managers
+# KR: 의존성 및 패키지 매니저 산출물
+node_modules/
+.pnpm-store/
+
+# EN: Build outputs and caches
+# KR: 빌드 결과물 및 캐시
+dist/
+build/
+.next/
+.turbo/
+.cache/
+
+# EN: Test coverage and reports
+# KR: 테스트 커버리지 및 리포트
+coverage/
+*.lcov
+
+# EN: Runtime artifacts and logs
+# KR: 런타임 산출물 및 로그
+*.log
+*.pid
+*.seed
+*.sqlite
+.DS_Store
+
+# EN: Environment overrides (keep samples like .env.example tracked)
+# KR: 환경 설정(예: .env.example과 같은 샘플은 추적 유지)
+.env
+.env.*
+!.env.example
+
+# EN: Local tooling outputs
+# KR: 로컬 도구 산출물
+change-monitor.log
+.idea/
+.vscode/

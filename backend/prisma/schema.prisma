@@ -1,0 +1,1240 @@
+// datasource & generator configuration / 데이터소스 및 제너레이터 설정
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums / 열거형 정의
+
+enum MemberStatus {
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+enum MemberKycStatus {
+  PENDING
+  REVIEW_REQUIRED
+  APPROVED
+  REJECTED
+}
+
+enum LanguageCode {
+  EN
+  KO
+}
+
+enum AdminStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum ServiceAccountStatus {
+  ACTIVE
+  SUSPENDED
+  REVOKED
+}
+
+enum AuthFactorType {
+  EMAIL_OTP
+  TOTP
+  BACKUP_CODE
+}
+
+enum LoginAttemptStatus {
+  SUCCESS
+  FAILURE
+  BLOCKED
+}
+
+enum Network {
+  ISC
+  BNB
+}
+
+enum NFTStandard {
+  ERC721
+  ERC1155
+}
+
+enum GiftKind {
+  AMOUNT
+  VOUCHER
+}
+
+enum CouponType {
+  DISCOUNT
+  FREE
+  EXCHANGE
+}
+
+enum NFTType {
+  GIFT
+  COUPON
+}
+
+enum NFTStatus {
+  ACTIVE
+  REDEEMED
+  EXPIRED
+  CANCELED
+}
+
+enum RedeemStatus {
+  SUBMITTED
+  CONFIRMED
+  FAILED
+  SETTLED
+}
+
+enum SettlementMethod {
+  ONCHAIN
+  OFFCHAIN
+}
+
+enum SettlementStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  PAID
+  REJECTED
+}
+
+enum OrderType {
+  BUY
+  SELL
+}
+
+enum AssetType {
+  TOKEN
+  NFT
+}
+
+enum OrderStatus {
+  OPEN
+  MATCHED
+  CLOSED
+  CANCELED
+}
+
+enum EscrowState {
+  LOCKED
+  RELEASED
+  REFUNDED
+  DISPUTED
+}
+
+enum EscrowTransferDirection {
+  IN
+  OUT
+}
+
+enum DisputeResult {
+  PENDING
+  RELEASE
+  REFUND
+  ESCALATED
+}
+
+enum DisputeEvidenceType {
+  IMAGE
+  DOCUMENT
+  NOTE
+}
+
+enum HashpowerSource {
+  PURCHASE
+  REWARD
+}
+
+enum HashpowerTxnType {
+  PURCHASE
+  GRANT
+  ADJUSTMENT
+}
+
+enum WithdrawalExchange {
+  COINEX
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  PROCESSING
+  COMPLETED
+  REJECTED
+  FAILED
+}
+
+enum WithdrawalCheckpointStep {
+  TWO_FA
+  WHITELIST
+  COMPLIANCE_REVIEW
+  FINANCE_APPROVAL
+  EXECUTION
+}
+
+enum WithdrawalCheckpointStatus {
+  PENDING
+  COMPLETED
+  REJECTED
+}
+
+enum StakingProductStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  RETIRED
+}
+
+enum StakingPositionStatus {
+  ACTIVE
+  COMPLETED
+  REDEEMED
+  CANCELED
+}
+
+enum LendingOfferStatus {
+  OPEN
+  PARTIAL
+  CLOSED
+  CANCELED
+}
+
+enum LendingLoanState {
+  ACTIVE
+  REPAID
+  DEFAULTED
+  LIQUIDATED
+}
+
+enum LoanProductStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+
+enum LoanApplicationState {
+  PENDING
+  APPROVED
+  REJECTED
+  ACTIVE
+  CLOSED
+  DEFAULTED
+}
+
+enum StoreItemStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+  DISCONTINUED
+}
+
+enum StoreOrderStatus {
+  PENDING
+  PROCESSING
+  FULFILLED
+  FAILED
+  CANCELED
+}
+
+enum MerchantStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum MerchantUserRole {
+  CASHIER
+  MANAGER
+  OWNER
+}
+
+enum MerchantWebhookStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum NoticeStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum InquiryStatus {
+  OPEN
+  PENDING
+  RESOLVED
+  CLOSED
+}
+
+enum AuditActorType {
+  MEMBER
+  ADMIN
+  SERVICE
+}
+
+enum AuditResult {
+  SUCCESS
+  FAILURE
+  DENIED
+}
+
+enum TermType {
+  TERMS
+  PRIVACY
+  WITHDRAWAL_POLICY
+  OTHER
+}
+
+// ---------------------------------------------------------------------------
+// Member & Security Domain / 회원 및 보안 도메인
+
+model Member {
+  id            String          @id @default(cuid())
+  email         String          @unique
+  phone         String?         @unique
+  passwordHash  String
+  status        MemberStatus    @default(ACTIVE)
+  kycStatus     MemberKycStatus @default(PENDING)
+  preferredLang LanguageCode    @default(EN)
+  lastLoginAt   DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  profile            MemberProfile?
+  kycSubmissions     KycSubmission[]
+  authFactors        AuthFactor[]
+  deviceSessions     DeviceSession[]
+  loginAttempts      LoginAttempt[]
+  wallets            Wallet[]
+  whitelistAddresses WhitelistAddress[]
+  redeemLogs         RedeemLog[]
+  p2pOrders          P2POrder[]             @relation("MemberOrders")
+  p2pEscrows         Escrow[]               @relation("MemberEscrows")
+  p2pChats           P2PChat[]
+  disputesRaised     Dispute[]              @relation("MemberDisputes")
+  hashpowers         Hashpower[]
+  hashpowerTxns      HashpowerTxn[]
+  miningStats        MiningStatDaily[]
+  miningBalances     MiningBalance[]
+  withdrawalRequests WithdrawalRequest[]
+  withdrawalChecks   WithdrawalCheckpoint[]
+  stakingPositions   StakingPosition[]
+  lendingOffers      LendingOffer[]         @relation("MemberLendingOffers")
+  borrowedLoans      LendingLoan[]          @relation("MemberBorrowedLoans")
+  loanApplications   LoanApplication[]
+  storeOrders        StoreOrder[]
+  inquiries          Inquiry[]
+  noticesRead        NoticeRead[]
+  roles              MemberRole[]
+  auditLogs          AuditLog[]             @relation("MemberActor")
+}
+
+model MemberProfile {
+  member         Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId       String    @id
+  fullName       String?
+  birthDate      DateTime?
+  nationality    String?
+  docType        String?
+  docNumber      String?
+  kycLevel       String?
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  additionalInfo Json?
+}
+
+model MemberRole {
+  member      Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId    String
+  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId      String
+  assignedAt  DateTime @default(now())
+  assignedBy  String?
+
+  @@id([memberId, roleId])
+  @@index([roleId])
+}
+
+model KycSubmission {
+  id              String          @id @default(cuid())
+  member          Member          @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId        String
+  provider        String
+  externalRef     String
+  status          MemberKycStatus @default(PENDING)
+  submittedAt     DateTime        @default(now())
+  completedAt     DateTime?
+  payloadSnapshot Json?
+
+  @@index([memberId, status])
+}
+
+model AuthFactor {
+  id              String         @id @default(cuid())
+  member          Member         @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId        String
+  factorType      AuthFactorType
+  secretEncrypted String
+  enabled         Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@unique([memberId, factorType])
+}
+
+model DeviceSession {
+  id                String   @id @default(cuid())
+  member            Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId          String
+  deviceFingerprint String
+  ipHash            String?
+  userAgent         String?
+  trusted           Boolean  @default(false)
+  lastSeenAt        DateTime @default(now())
+
+  @@unique([memberId, deviceFingerprint])
+}
+
+model LoginAttempt {
+  id            String             @id @default(cuid())
+  member        Member?            @relation(fields: [memberId], references: [id])
+  memberId      String?
+  identifier    String
+  ipHash        String?
+  userAgent     String?
+  status        LoginAttemptStatus
+  failureReason String?
+  attemptedAt   DateTime           @default(now())
+
+  @@index([identifier, attemptedAt])
+}
+
+model AdminUser {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  name         String?
+  passwordHash String
+  status       AdminStatus @default(ACTIVE)
+  role         Role?       @relation(fields: [roleId], references: [id])
+  roleId       String?
+  lastLoginAt  DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  auditLogs             AuditLog[]             @relation("AdminActor")
+  withdrawalCheckpoints WithdrawalCheckpoint[]
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions     RolePermission[]
+  admins          AdminUser[]
+  serviceAccounts ServiceAccount[]
+  merchantUsers   MerchantUser[]
+  memberRoles     MemberRole[]
+}
+
+model Permission {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  label     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roles RolePermission[]
+}
+
+model RolePermission {
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId       String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permissionId String
+  grantedAt    DateTime   @default(now())
+  grantedBy    String?
+
+  @@id([roleId, permissionId])
+}
+
+model ServiceAccount {
+  id          String               @id @default(cuid())
+  name        String
+  description String?
+  apiKeyHash  String
+  status      ServiceAccountStatus @default(ACTIVE)
+  role        Role?                @relation(fields: [roleId], references: [id])
+  roleId      String?
+  lastUsedAt  DateTime?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  auditLogs AuditLog[] @relation("ServiceActor")
+}
+
+model AuditLog {
+  id             String          @id @default(cuid())
+  actorType      AuditActorType
+  actorMember    Member?         @relation("MemberActor", fields: [actorMemberId], references: [id])
+  actorMemberId  String?
+  actorAdmin     AdminUser?      @relation("AdminActor", fields: [actorAdminId], references: [id])
+  actorAdminId   String?
+  actorService   ServiceAccount? @relation("ServiceActor", fields: [actorServiceId], references: [id])
+  actorServiceId String?
+  action         String
+  targetType     String
+  targetId       String?
+  roleSnapshot   String?
+  result         AuditResult     @default(SUCCESS)
+  ip             String?
+  userAgent      String?
+  traceId        String?
+  spanId         String?
+  metadata       Json?
+  createdAt      DateTime        @default(now())
+
+  @@index([actorType, createdAt])
+  @@index([targetType, targetId])
+}
+
+// ---------------------------------------------------------------------------
+// Wallet & Asset Domain / 지갑 및 자산 도메인
+
+model Wallet {
+  id        String   @id @default(cuid())
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId  String
+  network   Network
+  address   String   @unique
+  walletKey String? // Encrypted wallet key / 암호화된 지갑 키
+  label     String?
+  isLocked  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  nftHoldings      NFToken[]
+  rotations        WalletRotationLog[]
+  balanceSnapshots BalanceSnapshot[]
+
+  @@index([memberId, network])
+}
+
+model WalletRotationLog {
+  id          String   @id @default(cuid())
+  wallet      Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  walletId    String
+  rotatedAt   DateTime @default(now())
+  oldHash     String?
+  newHash     String?
+  reason      String?
+  performedBy String?
+}
+
+model WalletNetworkSetting {
+  network            Network  @id
+  chainId            Int
+  explorerUrl        String?
+  minConfirmations   Int      @default(1)
+  maintenanceState   String? // e.g. read-only / 예: 점검 모드
+  withdrawEnabled    Boolean  @default(true)
+  depositEnabled     Boolean  @default(true)
+  whitelistMandatory Boolean  @default(false)
+  updatedAt          DateTime @updatedAt
+}
+
+model Token {
+  id            String   @id @default(cuid())
+  network       Network
+  name          String
+  symbol        String
+  contract      String   @unique
+  decimals      Int
+  logoUrl       String?
+  isP2pEnabled  Boolean  @default(false)
+  isSwapEnabled Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  priceSnapshots TokenPriceSnapshot[]
+}
+
+model TokenPriceSnapshot {
+  token      Token    @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+  tokenId    String
+  capturedAt DateTime
+  priceUsd   Decimal? @db.Decimal(38, 18)
+  priceKrw   Decimal? @db.Decimal(38, 18)
+  source     String?
+
+  @@id([tokenId, capturedAt])
+}
+
+model BalanceSnapshot {
+  id         String    @id @default(cuid())
+  wallet     Wallet    @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  walletId   String
+  assetType  AssetType
+  assetId    String
+  amount     Decimal   @db.Decimal(38, 18)
+  capturedAt DateTime  @default(now())
+
+  @@index([walletId, assetType, capturedAt])
+}
+
+model WhitelistAddress {
+  id         String    @id @default(cuid())
+  member     Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId   String
+  network    Network
+  address    String
+  label      String?
+  status     String    @default("PENDING")
+  approvedAt DateTime?
+  approvedBy String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([memberId, network, address])
+}
+
+// ---------------------------------------------------------------------------
+// NFT, Merchant & Settlement Domain / NFT, 가맹점, 정산 도메인
+
+model NFTCollection {
+  id        String      @id @default(cuid())
+  network   Network
+  name      String
+  standard  NFTStandard
+  contract  String      @unique
+  issuerId  String?
+  metadata  Json?
+  createdAt DateTime    @default(now())
+
+  tokens      NFToken[]
+  giftSpecs   GiftSpec[]
+  couponSpecs CouponSpec[]
+}
+
+model GiftSpec {
+  id             String         @id @default(cuid())
+  collection     NFTCollection? @relation(fields: [collectionId], references: [id])
+  collectionId   String?
+  title          String
+  kind           GiftKind
+  faceValue      Decimal?       @db.Decimal(38, 18)
+  currency       String?
+  expiresPolicy  String?
+  redeemPolicy   String?
+  maxRedemptions Int?
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  tokens NFToken[]
+}
+
+model CouponSpec {
+  id            String         @id @default(cuid())
+  collection    NFTCollection? @relation(fields: [collectionId], references: [id])
+  collectionId  String?
+  title         String
+  type          CouponType
+  rateOrAmount  Decimal?       @db.Decimal(38, 18)
+  currency      String?
+  expiresPolicy String?
+  metadata      Json?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  tokens NFToken[]
+}
+
+model NFToken {
+  id             String        @id @default(cuid())
+  collection     NFTCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId   String
+  tokenId        String
+  owner          Wallet        @relation(fields: [ownerId], references: [id])
+  ownerId        String
+  type           NFTType
+  status         NFTStatus     @default(ACTIVE)
+  metadataUri    String
+  usableFrom     DateTime?
+  expiresAt      DateTime?
+  lastRedeemedAt DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  giftSpec       GiftSpec?     @relation(fields: [giftSpecId], references: [id])
+  giftSpecId     String?
+  couponSpec     CouponSpec?   @relation(fields: [couponSpecId], references: [id])
+  couponSpecId   String?
+
+  redeems RedeemLog[]
+
+  @@unique([collectionId, tokenId])
+}
+
+model Merchant {
+  id                 String         @id @default(cuid())
+  name               String
+  bizNo              String         @unique
+  countryCode        String?
+  settlementWallet   String?
+  settlementCurrency String?
+  bankInfo           Json?
+  status             MerchantStatus @default(PENDING)
+  contactEmail       String?
+  contactPhone       String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  redeemLogs   RedeemLog[]
+  settlements  Settlement[]
+  users        MerchantUser[]
+  webhooks     MerchantWebhook[]
+  catalogItems MerchantCatalogItem[]
+}
+
+model MerchantUser {
+  id           String           @id @default(cuid())
+  merchant     Merchant         @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId   String
+  email        String
+  name         String?
+  role         MerchantUserRole
+  status       AdminStatus      @default(ACTIVE)
+  roleOverride Role?            @relation(fields: [roleId], references: [id])
+  roleId       String?
+  lastLoginAt  DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@unique([merchantId, email])
+}
+
+model MerchantWebhook {
+  id            String                @id @default(cuid())
+  merchant      Merchant              @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId    String
+  targetUrl     String
+  eventTypes    Json
+  secret        String
+  status        MerchantWebhookStatus @default(ACTIVE)
+  lastSuccessAt DateTime?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+}
+
+model MerchantCatalogItem {
+  id         String    @id @default(cuid())
+  merchant   Merchant  @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  merchantId String
+  specType   AssetType // GiftSpec or CouponSpec reference / GiftSpec 또는 CouponSpec 참조
+  specId     String
+  sku        String
+  price      Decimal   @db.Decimal(38, 18)
+  inventory  Int?
+  startAt    DateTime?
+  endAt      DateTime?
+  status     String    @default("DRAFT")
+  metadata   Json?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([merchantId, sku])
+}
+
+model RedeemLog {
+  id           String       @id @default(cuid())
+  nft          NFToken      @relation(fields: [nftId], references: [id])
+  nftId        String
+  merchant     Merchant     @relation(fields: [merchantId], references: [id])
+  merchantId   String
+  member       Member       @relation(fields: [memberId], references: [id])
+  memberId     String
+  settlement   Settlement?  @relation(fields: [settlementId], references: [id])
+  settlementId String?
+  amount       Decimal      @db.Decimal(38, 18)
+  currency     String
+  redeemedAt   DateTime     @default(now())
+  location     String?
+  txHash       String?
+  status       RedeemStatus @default(SUBMITTED)
+
+  settlementLine SettlementLine?
+}
+
+model Settlement {
+  id          String           @id @default(cuid())
+  merchant    Merchant         @relation(fields: [merchantId], references: [id])
+  merchantId  String
+  periodStart DateTime
+  periodEnd   DateTime
+  amount      Decimal          @db.Decimal(38, 18)
+  currency    String
+  method      SettlementMethod
+  status      SettlementStatus @default(PENDING)
+  notes       String?
+  generatedBy String?
+  generatedAt DateTime         @default(now())
+  settledAt   DateTime?
+
+  redeemLogs      RedeemLog[]
+  settlementLines SettlementLine[]
+
+  @@index([merchantId, status])
+}
+
+model SettlementLine {
+  id           String     @id @default(cuid())
+  settlement   Settlement @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  settlementId String
+  redeemLog    RedeemLog  @relation(fields: [redeemLogId], references: [id])
+  redeemLogId  String     @unique
+  netAmount    Decimal    @db.Decimal(38, 18)
+  feeAmount    Decimal    @db.Decimal(38, 18)
+  notes        String?
+  createdAt    DateTime   @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// P2P Domain / P2P 도메인
+
+model P2POrder {
+  id          String      @id @default(cuid())
+  maker       Member      @relation("MemberOrders", fields: [makerId], references: [id])
+  makerId     String
+  orderType   OrderType
+  assetType   AssetType
+  assetRef    String
+  quantity    Decimal     @db.Decimal(38, 18)
+  price       Decimal     @db.Decimal(38, 18)
+  payCurrency String
+  status      OrderStatus @default(OPEN)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  escrows Escrow[]
+
+  @@index([makerId, status])
+}
+
+model Escrow {
+  id         String      @id @default(cuid())
+  order      P2POrder    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId    String
+  taker      Member      @relation("MemberEscrows", fields: [takerId], references: [id])
+  takerId    String
+  state      EscrowState @default(LOCKED)
+  hasDispute Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  releasedAt DateTime?
+
+  chats     P2PChat[]
+  dispute   Dispute?
+  transfers EscrowTransfer[]
+}
+
+model P2PChat {
+  id        String   @id @default(cuid())
+  escrow    Escrow   @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  escrowId  String
+  sender    Member   @relation(fields: [senderId], references: [id])
+  senderId  String
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model EscrowTransfer {
+  id        String                  @id @default(cuid())
+  escrow    Escrow                  @relation(fields: [escrowId], references: [id], onDelete: Cascade)
+  escrowId  String
+  direction EscrowTransferDirection
+  amount    Decimal                 @db.Decimal(38, 18)
+  assetType AssetType
+  assetRef  String?
+  txHash    String?
+  postedAt  DateTime                @default(now())
+  metadata  Json?
+}
+
+model Dispute {
+  id         String        @id @default(cuid())
+  escrow     Escrow        @relation(fields: [escrowId], references: [id])
+  escrowId   String        @unique
+  raisedBy   Member?       @relation("MemberDisputes", fields: [raisedById], references: [id])
+  raisedById String?
+  reason     String
+  resolvedBy String?
+  result     DisputeResult @default(PENDING)
+  resolvedAt DateTime?
+  createdAt  DateTime      @default(now())
+
+  evidences DisputeEvidence[]
+}
+
+model DisputeEvidence {
+  id         String              @id @default(cuid())
+  dispute    Dispute             @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  disputeId  String
+  type       DisputeEvidenceType
+  fileUrl    String?
+  note       String?
+  uploadedBy String?
+  uploadedAt DateTime            @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Mining Domain / 마이닝 도메인
+
+model Hashpower {
+  id        String          @id @default(cuid())
+  member    Member          @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId  String
+  source    HashpowerSource
+  mhS       Decimal         @db.Decimal(38, 18)
+  grantedAt DateTime        @default(now())
+  expiresAt DateTime?
+  createdAt DateTime        @default(now())
+}
+
+model HashpowerTxn {
+  id         String           @id @default(cuid())
+  member     Member           @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId   String
+  type       HashpowerTxnType
+  mhS        Decimal          @db.Decimal(38, 18)
+  price      Decimal?         @db.Decimal(38, 18)
+  payToken   String?
+  occurredAt DateTime         @default(now())
+  metadata   Json?
+}
+
+model MiningStatDaily {
+  member       Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId     String
+  date         DateTime
+  hashrate24h  Decimal? @db.Decimal(38, 18)
+  rejectRate   Decimal? @db.Decimal(38, 18)
+  payoutAmount Decimal? @db.Decimal(38, 18)
+  payoutToken  String?
+  createdAt    DateTime @default(now())
+
+  @@id([memberId, date])
+}
+
+model MiningBalance {
+  member       Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId     String
+  coin         String
+  amount       Decimal   @db.Decimal(38, 18)
+  lastSyncedAt DateTime?
+  updatedAt    DateTime  @updatedAt
+
+  @@id([memberId, coin])
+}
+
+model WithdrawalRequest {
+  id           String             @id @default(cuid())
+  member       Member             @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId     String
+  coin         String
+  amount       Decimal            @db.Decimal(38, 18)
+  destExchange WithdrawalExchange @default(COINEX)
+  destAccount  String
+  status       WithdrawalStatus   @default(PENDING)
+  approvedBy   String?
+  requestedAt  DateTime           @default(now())
+  processedAt  DateTime?
+  metadata     Json?
+
+  checkpoints WithdrawalCheckpoint[]
+
+  @@index([memberId, status])
+}
+
+model WithdrawalCheckpoint {
+  id            String                     @id @default(cuid())
+  withdrawal    WithdrawalRequest          @relation(fields: [withdrawalId], references: [id], onDelete: Cascade)
+  withdrawalId  String
+  step          WithdrawalCheckpointStep
+  status        WithdrawalCheckpointStatus @default(PENDING)
+  requiredSignatures   Int                 @default(1)
+  collectedSignatures  Int                 @default(0)
+  complianceNote       String?
+  actorAdminId  String?
+  actorMember   Member?                    @relation(fields: [actorMemberId], references: [id])
+  actorMemberId String?
+  completedAt   DateTime?
+  payload       Json?
+  createdAt     DateTime                   @default(now())
+  AdminUser     AdminUser?                 @relation(fields: [adminUserId], references: [id])
+  adminUserId   String?
+  signatures    WithdrawalCheckpointSignature[]
+
+  @@index([withdrawalId, step])
+}
+
+model WithdrawalCheckpointSignature {
+  id           String               @id @default(cuid())
+  checkpoint   WithdrawalCheckpoint @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  checkpointId String
+  adminId      String
+  decision     String
+  note         String?
+  signedAt     DateTime             @default(now())
+
+  @@unique([checkpointId, adminId])
+}
+
+// ---------------------------------------------------------------------------
+// EARN Domain / 재테크 도메인
+
+model StakingProduct {
+  id           String               @id @default(cuid())
+  assetType    AssetType
+  assetRef     String?
+  apr          Decimal              @db.Decimal(38, 18)
+  lockDays     Int
+  minAmount    Decimal              @db.Decimal(38, 18)
+  maxAmount    Decimal              @db.Decimal(38, 18)
+  totalCap     Decimal              @db.Decimal(38, 18)
+  remainingCap Decimal              @db.Decimal(38, 18)
+  status       StakingProductStatus @default(DRAFT)
+  metadata     Json?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  positions StakingPosition[]
+}
+
+model StakingPosition {
+  id            String                @id @default(cuid())
+  member        Member                @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId      String
+  product       StakingProduct        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId     String
+  principal     Decimal               @db.Decimal(38, 18)
+  startAt       DateTime              @default(now())
+  endAt         DateTime?
+  rewardAccrued Decimal               @default(0) @db.Decimal(38, 18)
+  status        StakingPositionStatus @default(ACTIVE)
+  metadata      Json?
+}
+
+model LendingOffer {
+  id             String             @id @default(cuid())
+  lender         Member             @relation("MemberLendingOffers", fields: [lenderId], references: [id], onDelete: Cascade)
+  lenderId       String
+  assetType      AssetType
+  assetRef       String?
+  amount         Decimal            @db.Decimal(38, 18)
+  termDays       Int
+  rate           Decimal            @db.Decimal(38, 18)
+  collateralSpec Json?
+  minAmount      Decimal            @db.Decimal(38, 18)
+  maxAmount      Decimal            @db.Decimal(38, 18)
+  status         LendingOfferStatus @default(OPEN)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  loans LendingLoan[]
+}
+
+model LendingLoan {
+  id               String           @id @default(cuid())
+  offer            LendingOffer     @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  offerId          String
+  borrower         Member           @relation("MemberBorrowedLoans", fields: [borrowerId], references: [id], onDelete: Cascade)
+  borrowerId       String
+  amount           Decimal          @db.Decimal(38, 18)
+  startAt          DateTime         @default(now())
+  dueAt            DateTime
+  collateralAsset  String?
+  collateralAmount Decimal?         @db.Decimal(38, 18)
+  state            LendingLoanState @default(ACTIVE)
+  closedAt         DateTime?
+  metadata         Json?
+}
+
+model LoanProduct {
+  id                 String            @id @default(cuid())
+  assetType          AssetType
+  assetRef           String?
+  termDays           Int
+  rate               Decimal           @db.Decimal(38, 18)
+  collateralRequired Boolean           @default(true)
+  collateralSpec     Json?
+  status             LoanProductStatus @default(DRAFT)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  applications LoanApplication[]
+}
+
+model LoanApplication {
+  id               String               @id @default(cuid())
+  product          LoanProduct          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId        String
+  member           Member               @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId         String
+  amount           Decimal              @db.Decimal(38, 18)
+  startAt          DateTime?
+  dueAt            DateTime?
+  collateralAsset  String?
+  collateralAmount Decimal?             @db.Decimal(38, 18)
+  state            LoanApplicationState @default(PENDING)
+  metadata         Json?
+  reviewedBy       String?
+  reviewedAt       DateTime?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Store & External Provider Domain / 스토어 및 외부 공급사 도메인
+
+model CouponProvider {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  apiBaseUrl    String?
+  status        String   @default("ACTIVE")
+  credentialRef String?
+  webhookSecret String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  storeItems      StoreItem[]
+  reconciliations ProviderReconciliation[]
+}
+
+model StoreItem {
+  id             String          @id @default(cuid())
+  provider       CouponProvider? @relation(fields: [providerId], references: [id])
+  providerId     String?
+  extProvider    String
+  extSku         String
+  title          String
+  category       String
+  price          Decimal         @db.Decimal(38, 18)
+  currency       String
+  status         StoreItemStatus @default(DRAFT)
+  metadata       Json?
+  localeBundleId String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  orders StoreOrder[]
+
+  @@unique([extProvider, extSku])
+}
+
+model StoreOrder {
+  id            String           @id @default(cuid())
+  member        Member           @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId      String
+  item          StoreItem        @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId        String
+  payAssetType  AssetType
+  payAssetRef   String?
+  payAmount     Decimal          @db.Decimal(38, 18)
+  status        StoreOrderStatus @default(PENDING)
+  extPayload    Json?
+  deliveredCode String?
+  createdAt     DateTime         @default(now())
+  fulfilledAt   DateTime?
+
+  @@index([memberId, status])
+}
+
+model ProviderReconciliation {
+  id          String         @id @default(cuid())
+  provider    CouponProvider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  providerId  String
+  periodStart DateTime
+  periodEnd   DateTime
+  status      String         @default("PENDING")
+  generatedAt DateTime       @default(now())
+  payloadHash String?
+  metadata    Json?
+}
+
+// ---------------------------------------------------------------------------
+// Content & Support Domain / 콘텐츠 및 고객지원 도메인
+
+model Notice {
+  id          String       @id @default(cuid())
+  title       String
+  body        String
+  locale      LanguageCode @default(KO)
+  status      NoticeStatus @default(DRAFT)
+  version     String?
+  publishedAt DateTime?
+  publishedBy String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  reads NoticeRead[]
+}
+
+model NoticeRead {
+  id       String   @id @default(cuid())
+  notice   Notice   @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  noticeId String
+  member   Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId String
+  readAt   DateTime @default(now())
+
+  @@unique([noticeId, memberId])
+}
+
+model Inquiry {
+  id          String        @id @default(cuid())
+  member      Member        @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId    String
+  category    String
+  content     String
+  status      InquiryStatus @default(OPEN)
+  assignedTo  String?
+  createdAt   DateTime      @default(now())
+  respondedAt DateTime?
+
+  attachments SupportAttachment[]
+}
+
+model SupportAttachment {
+  id         String   @id @default(cuid())
+  inquiry    Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  inquiryId  String
+  fileUrl    String
+  uploadedBy String?
+  uploadedAt DateTime @default(now())
+}
+
+model CompanySetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+}
+
+model Term {
+  id          String    @id @default(cuid())
+  type        TermType
+  version     String
+  content     String
+  effectiveAt DateTime
+  retiredAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}

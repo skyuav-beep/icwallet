@@ -1,0 +1,22 @@
+{
+  "name": "icwallet",
+  "private": true,
+  "version": "0.1.0",
+  "description": "IC Wallet monorepo scaffold (EN/KR documentation required).",
+  "engines": {
+    "node": ">=20.10.0",
+    "pnpm": ">=8.10.0"
+  },
+  "scripts": {
+    "setup": "pnpm install --recursive",
+    "build": "pnpm -r run build",
+    "test": "pnpm -r --if-present run test",
+    "lint": "pnpm -r --if-present run lint",
+    "spectral:admin": "spectral lint docs/OPENAPI-ADMIN.yaml"
+  },
+  "devDependencies": {
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/testing": "^11.1.6",
+    "@stoplight/spectral-cli": "^6.15.0"
+  }
+}
