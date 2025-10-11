@@ -29,6 +29,8 @@ import { CoinExModule } from '../adapters/coinex/coinex.module';
 import { WithdrawalExecutorService } from './mining/withdrawal-executor.service';
 import { NotifierModule } from '../shared/notifier/notifier.module';
 import { AuditLogModule } from '../shared/audit/audit-log.module';
+import { SupportModule } from '../support/support.module';
+import { AdminSupportController } from './support/admin-support.controller';
 
 @Module({
   imports: [
@@ -36,6 +38,7 @@ import { AuditLogModule } from '../shared/audit/audit-log.module';
     CoinExModule,
     AuditLogModule,
     NotifierModule,
+    SupportModule,
     PassportModule.register({ defaultStrategy: 'admin-jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -58,6 +61,7 @@ import { AuditLogModule } from '../shared/audit/audit-log.module';
     AdminEarnController,
     AdminStoreController,
     AdminPolicyController,
+    AdminSupportController,
   ],
   providers: [
     AdminAuthService,
