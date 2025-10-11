@@ -14,7 +14,7 @@ Keep this checklist in sync with `spec.md`. Update `[ ]` to `[x]` as you finish 
 - [x] Specify adapters for external APIs (mblockapi, Hashdam, coupon, CoinEx) with failure and retry strategies. / 외부 API(mblockapi, Hashdam, 쿠폰사, CoinEx) 어댑터와 실패·재시도 전략을 정의합니다.
 - [x] Implement admin REST APIs for members, merchants, wallets, NFTs, P2P, mining, EARN, store, and policies. / 회원·가맹점·지갑·NFT·P2P·마이닝·EARN·스토어·정책을 다루는 관리자 REST API를 구현합니다.
 - [x] Build approval workflows covering withdrawal, settlement, and escrow with 2FA, whitelist, and admin review. / 2FA·화이트리스트·관리자 승인을 포함한 출금·정산·에스크로 승인 워크플로를 구축합니다.
-- [ ] Develop shared modules for notifications, support, terms management, and embed audit logging. / 알림·고객센터·약관 관리 공통 모듈을 구현하고 감사 로그를 전 서비스에 삽입합니다.
+- [x] Develop shared modules for notifications, support, terms management, and embed audit logging. / 알림·고객센터·약관 관리 공통 모듈을 구현하고 감사 로그를 전 서비스에 삽입합니다.
 
 ## 3. Frontend Applications / 프론트엔드 애플리케이션
 - [x] Establish the user app routing skeleton (`/wallet`, `/nft-market`, `/p2p`, `/mining`, `/earn`, `/store`, `/merchants`, `/me`). / 사용자 앱 라우팅 골격을 구성합니다.
