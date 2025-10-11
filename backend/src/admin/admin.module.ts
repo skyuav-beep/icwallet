@@ -30,7 +30,9 @@ import { WithdrawalExecutorService } from './mining/withdrawal-executor.service'
 import { NotifierModule } from '../shared/notifier/notifier.module';
 import { AuditLogModule } from '../shared/audit/audit-log.module';
 import { SupportModule } from '../support/support.module';
+import { TermsModule } from '../terms/terms.module';
 import { AdminSupportController } from './support/admin-support.controller';
+import { AdminTermsController } from './terms/admin-terms.controller';
 
 @Module({
   imports: [
@@ -39,6 +41,7 @@ import { AdminSupportController } from './support/admin-support.controller';
     AuditLogModule,
     NotifierModule,
     SupportModule,
+    TermsModule,
     PassportModule.register({ defaultStrategy: 'admin-jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -62,6 +65,7 @@ import { AdminSupportController } from './support/admin-support.controller';
     AdminStoreController,
     AdminPolicyController,
     AdminSupportController,
+    AdminTermsController,
   ],
   providers: [
     AdminAuthService,
