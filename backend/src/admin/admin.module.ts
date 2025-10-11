@@ -28,11 +28,13 @@ import { AdminJwtStrategy } from './auth/admin-jwt.strategy';
 import { CoinExModule } from '../adapters/coinex/coinex.module';
 import { WithdrawalExecutorService } from './mining/withdrawal-executor.service';
 import { NotifierModule } from '../shared/notifier/notifier.module';
+import { AuditLogModule } from '../shared/audit/audit-log.module';
 
 @Module({
   imports: [
     PrismaModule,
     CoinExModule,
+    AuditLogModule,
     NotifierModule,
     PassportModule.register({ defaultStrategy: 'admin-jwt' }),
     JwtModule.registerAsync({

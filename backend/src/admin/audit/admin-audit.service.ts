@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../../shared/audit/audit-log.service';
 import { AdminActorContext } from '../guards/admin-auth.guard';
 
 @Injectable()
 export class AdminAuditService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly auditLog: AuditLogService) {}
 
   async record(options: {
     actor: AdminActorContext | undefined;
@@ -15,16 +15,16 @@ export class AdminAuditService {
   }) {
     const { actor, action, targetType, targetId, metadata } = options;
 
-    await this.prisma.auditLog.create({
-      data: {
-        actorType: 'ADMIN',
-        actorAdminId: actor?.id ?? null,
-        action,
-        targetType,
-        targetId: targetId ?? undefined,
-        roleSnapshot: actor?.role,
-        metadata: metadata ?? null,
+    await this.auditLog.record({
+      actor: {
+        type: 'ADMIN',
+        id: actor?.id ?? null,
+        role: actor?.role ?? null,
       },
+      action,
+      targetType,
+      targetId: targetId ?? null,
+      metadata: metadata ?? null,
     });
   }
 }
