@@ -1,5 +1,12 @@
 # Repository Guidelines / 저장소 가이드라인
 
+## Six-step approval workflow / 6단계 승인 워크플로
+
+- Except for simple factual lookups, run one step per turn. / 단순 사실 조회 외 작업은 한 턴에 한 단계로 진행합니다.
+- Step 2 is read-only and must check branch, worktree, base, remote, PR, and the full Git lifecycle before Step 3 approval. / Step 2는 읽기 전용이며 Step 3 승인 전에 branch·worktree·base·remote·PR과 전체 Git 수명주기를 점검합니다.
+- After full lifecycle approval, Step 6 performs fast checks, STATE, commit, push, ready PR, merge, remote-base verification, and cleanup. / 전체 수명주기 승인 후 Step 6에서 빠른 검증부터 merge·원격 base 검증·정리까지 완료합니다.
+- Defer full CI to a batch of 3–5 changes, end of day, pre-release, or explicit request; never defer mandatory security or migration checks. / 전체 CI는 3~5개 누적 작업 등으로 배치하되 필수 보안·migration 검증은 미루지 않습니다.
+
 Maintain bilingual (EN/KR) documentation across all project artifacts; add translations whenever updating or creating content. (KR: 모든 문서는 영문·국문 병기를 기본으로 하며, 신규/수정 시 번역을 함께 제공합니다.)
 
 Follow rules; update `spec.md` when scope/controls change. (KR: 범위·규제 변동 시 `spec.md` 갱신, 지침 준수)
